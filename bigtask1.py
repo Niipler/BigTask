@@ -1,6 +1,5 @@
-import os
+import math
 import sys
-
 import pygame
 import requests
 LAN_STEP = 0.008
@@ -12,11 +11,30 @@ map_file = "map.png"
 
 class Mapa:
     def __init__(self, lan=37.530887, lon=55.703118, zoom=15):
-        self.lan = lan
         self.lon = lon
+        self.lan = lan
         self.zoom = zoom
         self.type = "map"
 
+    def change_zoom(self, key):
+        if key:
+            if self.zoom < 19:
+                self.zoom += 1
+        else:
+            if self.zoom > 2:
+                self.zoom -= 1
+
+    def move_map(self, key):
+        if key == 'down':
+            self.lon -= LON_STEP * math.pow(2, 15 - self.zoom)
+        elif key == 'up':
+            self.lon += LON_STEP * math.pow(2, 15 - self.zoom)
+        elif key == 'right' and self.lan < 85:
+            self.lan += LAN_STEP * math.pow(2, 15 - self.zoom)
+        elif key == 'left' and self.lan > -85:
+            self.lan -= LAN_STEP * math.pow(2, 15 - self.zoom)
+        if self.lon > 180: self.lon -= 360
+        if self.lon < -180: self.lon += 360
 
 
 def load_map(mapa):
@@ -32,21 +50,31 @@ def load_map(mapa):
         file.write(response.content)
 
 
-
 def main():
     pygame.init()
     screen = pygame.display.set_mode((600, 450))
     pygame.display.flip()
-
-    cords = sys.argv[1:]
-    mapa = Mapa(cords[0], cords[1], cords[2])
+    mapa = Mapa()
 
     while pygame.event.wait().type != pygame.QUIT:
         load_map(mapa)
         screen.blit(pygame.image.load(map_file), (0, 0))
         pygame.display.flip()
-    pygame.quit()
+        key = pygame.key.get_pressed()
+        if key[pygame.K_PAGEUP]:
+            mapa.change_zoom(True)
+        if key[pygame.K_PAGEDOWN]:
+            mapa.change_zoom(False)
+        if key[pygame.K_UP]:
+            mapa.move_map('up')
+        if key[pygame.K_DOWN]:
+            mapa.move_map('down')
+        if key[pygame.K_LEFT]:
+            mapa.move_map('left')
+        if key[pygame.K_RIGHT]:
+            mapa.move_map('right')
 
+    pygame.quit()
 
 
 if __name__ == "__main__":
