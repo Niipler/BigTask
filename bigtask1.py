@@ -67,10 +67,11 @@ def main():
     screen = pygame.display.set_mode((600, 450))
     pygame.display.flip()
     mapa = Mapa()
-    while True:
+    running = True
+    while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                break
+                running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 if x >= 500 and x <= 600 and y >= 400 and y <= 450:
